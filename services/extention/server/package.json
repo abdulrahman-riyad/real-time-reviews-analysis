@@ -2,16 +2,22 @@
   "name": "real-time-analysis",
   "version": "1.0.0",
   "description": "Providing a real time analysis to products through analizing reviews",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "test": "dev"
+    "dev": "nodemon server.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "axios": "^1.9.0",
     "cheerio": "^1.0.0",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
     "nodemon": "^3.1.10",
-    "pretty": "^2.0.0"
+    "pretty": "^2.0.0",
+    "puppeteer": "^24.8.2",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "user-agents": "^1.1.538"
   }
 }
