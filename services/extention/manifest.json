@@ -22,7 +22,7 @@
     "content_scripts": [
     {
         "matches": [
-            "https://*.amazon.*/*"
+            "https://*.amazon.com/*"
             ],
         "js": [
             "content-script.js"
