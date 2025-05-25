@@ -1,0 +1,17 @@
+.icon-container{
+    color: rgb(255, 255, 255);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0.6rem;
+    border-radius: 50%;
+    background-color: rgb(43, 43, 43);
+    cursor: pointer;
+    transition: all 0.25s;
+    width: fit-content;
+}
+
+.icon-container:hover{
+    color:  #646cff;
+    background-color: rgb(40, 40, 40);
+}

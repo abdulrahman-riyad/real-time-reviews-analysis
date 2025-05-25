@@ -1,0 +1,67 @@
+@-webkit-keyframes rotate {
+  from {
+    -webkit-transform: rotate(0deg);
+  }
+  to { 
+    -webkit-transform: rotate(360deg);
+  }
+}
+
+button {
+  border-radius: 8px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.5em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  background-color: #181818;
+  color: #6b6b6c;
+}
+
+.generate-icon{
+    color: rgb(255, 255, 255);
+    justify-content: center;
+    text-align: center;
+}
+
+.loading-icon{
+    color: #6b6b6c;
+    -webkit-animation-name: rotate; 
+    -webkit-animation-duration: 0.5s; 
+    -webkit-animation-iteration-count: infinite;
+    -webkit-transition-timing-function:linear;
+}
+
+.generate-icon{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px; 
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: background-color 0.25s;
+}
+
+
+.generate-button {
+  width: 100%;
+}
