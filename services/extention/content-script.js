@@ -1,9 +1,4 @@
 (async () => {
-
-
-    const SELECTORS = {
-        productTitle: "div#titleBlock.celwidget > div#titleBlockRightSection"
-    }
     window.addEventListener ("load", initProgram, false);
 
     function initProgram() {

@@ -19,7 +19,7 @@ export default function GenerateButton() {
             }
             chrome.tabs.sendMessage(currentTab.id ? currentTab.id : -1, { type: "REVIEWS"}, async (response) => {
                 if (chrome.runtime.lastError){
-                    alert("Wait Untill the page is fullly loaded, if the error persists, try reloading the page");
+                    alert("Ensure that you are on Amazon product and wait until the page is fully loaded, then try again.");
                     setLoading(false);
                     setDisabled(false);
                     return;
