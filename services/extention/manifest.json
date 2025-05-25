@@ -21,8 +21,15 @@
     ],
     "content_scripts": [
     {
-        "matches": ["https://*.amazon.com/*", "https://amazon.com/*"],
-        "js": ["content-script.js"]
+        "matches": [
+            "https://*.amazon.com/*"
+            ],
+        "js": [
+            "content-script.js"
+        ],
+        "css": [
+            "style.css"
+        ]
     }
   ]
 }

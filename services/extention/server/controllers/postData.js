@@ -18,6 +18,11 @@ exports.cleanData = async (request, response) => {
         reviews.forEach((review, idx) => {
             console.log(`Review ${idx + 1}: ${review}`);
         });
+
+        response.status(200).send({
+            "message": "Data cleaned successfully",
+            "data": reviews[0] || "No reviews found"
+        })
     } catch (err) {
         console.log("Error happend: ", err);
         response.status(500).send({"message":  "Error happend"});

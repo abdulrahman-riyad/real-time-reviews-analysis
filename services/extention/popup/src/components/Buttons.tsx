@@ -19,18 +19,16 @@ export default function GenerateButton() {
             }
             chrome.tabs.sendMessage(currentTab.id ? currentTab.id : -1, { type: "REVIEWS"}, async (response) => {
                 if (chrome.runtime.lastError){
-                    console.error("Error sending message:", chrome.runtime.lastError);
+                    alert("Wait Untill the page is fullly loaded, if the error persists, try reloading the page");
+                    setLoading(false);
+                    setDisabled(false);
                     return;
                 }
                 if (!response){
-                    alert("Response is undefined");
+                    alert(`Response is undefined`);
                 }
 
-                // debugging
-                if (response.data){
-                    alert(`Response is found ${response.data}`);
-                }
-                const res = await fetch("http://localhost:5000/clean", {
+                fetch("http://localhost:5000/clean", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -38,15 +36,36 @@ export default function GenerateButton() {
                     body: JSON.stringify({
                         data: response.data,
                     }),
-                })
+                }).then(async (res) => {
+                    if (!res.ok){
+                        alert("Error happened while cleaning the data");
+                        return;
+                    }
+                    const result = await res.json();
+                    if (!result || !result.data){
+                        alert("Error happened while extracting the data");
+                        return;
+                    }
 
-                if (!res.ok){
-                    alert("Error sending data to the server");
-                    return;
-                }
-            })
-            setLoading(false);
-            setDisabled(false);
+                    chrome.tabs.sendMessage(currentTab.id ? currentTab.id : -1, 
+                        { type: "MODAL", data: result.data}, (response) => {
+                        if (chrome.runtime.lastError){
+                            console.log("An error occurred while sending the data to the content script");
+                            return;
+                        }
+                        if (response === "error"){
+                            alert("An error occurred while sending the data to the content script");
+                            return;
+                        }
+                    })
+                }).catch((error) => {
+                    console.error("Error during fetch:", error);
+                    alert("An error occurred while cleaning the data");
+                }).finally(() => {
+                    setLoading(false);
+                    setDisabled(false);
+                })
+            })   
         });
     }
     return (
