@@ -4,9 +4,9 @@ Analyzes customer product reviews (scraped in real-time) using Aspect-Based Sent
 
 # Table of Content
 1. [Architucture](#architecture)
+2. [Aspect-Based Sentiment Analysis (ABSA)](#aspect-based-sentiment-analysis-absa)
 2. [Technology and Frameworks](#technology-and-frameworks)
-3. [Aspect-Based Sentiment Analysis (ABSA)](#aspect-based-sentiment-analysis-absa)
-4. [Contribution](#contribution)
+4. [Contribution](#contributors)
 5. [Future Consideration](#future-considerations)
 
 ## Architecture
@@ -52,7 +52,7 @@ Here is a demo of the results
 
 
 ## Aspect-Based Sentiment Analysis (ABSA)
-The documentation for the work and outputs of the model is documented [Here](/services/ml-1/)
+The documentation for the work and outputs of the model is documented [Here](/services/ml-1/PBL_proj.pdf)
 
 ## Technology and Frameworks
 
@@ -71,6 +71,17 @@ The documentation for the work and outputs of the model is documented [Here](/se
 * Hugging Face
 * FastAPI
 
-## Contribution
+
+## Contributors
+
+- [Abanoub Aziz](https://github.com/abanoub-samy-farhan) — Backend, Chrome Extension, Deployment
+- [Abdallah Adel](https://github.com/abdallahade1) — Machine Learning
+- [Abdelrahman Ryiad](https://github.com/alihassan) — Machine Learning
+- [Shahd Ammar](https://github.com/ShahdAmmar) — Machine Learning
+- [Yasmeen Sameh](https://github.com/Yasmeen55098) — Machine Learning
+
+We worked collaboratively to build and refine this project.
 
 ## Future Considerations
+
+We are aiming to expand the scope of this project beyond scraping specific domains to be a stand-alone reusable microservice with nessary configurations and APIs for businesses to use in their systems, providing a more native summary component in their E-commerce website.
