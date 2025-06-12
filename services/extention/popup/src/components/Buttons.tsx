@@ -28,7 +28,7 @@ export default function GenerateButton() {
                     alert(`Response is undefined`);
                 }
 
-                fetch("http://localhost:5000/clean", {
+                fetch("http://localhost:5000/generate", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -41,14 +41,13 @@ export default function GenerateButton() {
                         alert("Error happened while cleaning the data");
                         return;
                     }
+
                     const result = await res.json();
-                    if (!result || !result.data){
-                        alert("Error happened while extracting the data");
-                        return;
-                    }
+                    
+                    console.log(result);
 
                     chrome.tabs.sendMessage(currentTab.id ? currentTab.id : -1, 
-                        { type: "MODAL", data: result.data}, (response) => {
+                        { type: "MODAL", data: result.data.final_summary.summary_paragraph}, (response) => {
                         if (chrome.runtime.lastError){
                             console.log("An error occurred while sending the data to the content script");
                             return;

@@ -1,15 +1,18 @@
 const express = require('express')
 const cors = require('cors')
 const app = express()
+const dotenv = require("dotenv")
 const PORT = 5000
 
-const { cleanData } = require('./controllers/postData');
+dotenv.config()
+
+const { generateSummary } = require('./controllers/postData');
 
 app.use(cors());
 
 app.use(express.json());
 
-app.post('/clean', cleanData)
+app.post('/generate', generateSummary)
 
 
 app.listen(PORT, ()=> {

@@ -1,7 +1,10 @@
 const cheerio = require("cheerio");
+const axios = require("axios");
+const dotenv = require("dotenv");
+dotenv.config();
 
 
-exports.cleanData = async (request, response) => {
+exports.generateSummary = async (request, response) => {
     const data = request.body.data;
     try {
         const $ = cheerio.load(data);
@@ -15,16 +18,31 @@ exports.cleanData = async (request, response) => {
             
             reviews.push(reviewBody);
         })
-        reviews.forEach((review, idx) => {
-            console.log(`Review ${idx + 1}: ${review}`);
-        });
-
-        response.status(200).send({
-            "message": "Data cleaned successfully",
-            "data": reviews[0] || "No reviews found"
+        for (let i = 0; i < reviews.length; i++){
+            console.log(reviews[i]);
+        }
+    
+        // Request to the FastAPI
+        axios.post(process.env.MODEL_URL, {
+            reviews: reviews
+        },{
+            headers: {
+                "Content-Type": "application/json"
+            }
+        }).then(async (res) => {
+            const data = await res.data;
+            console.log(data)
+            response.status(200).send(JSON.stringify({
+                data: data
+            }))
+        }).catch((err) => {
+            console.log("server error " + err)
+            response.status(500).send({
+                message: "Server Error while generating summary"
+            })
         })
     } catch (err) {
         console.log("Error happend: ", err);
-        response.status(500).send({"message":  "Error happend"});
+        response.status(500).send({"message":  "Server Error"});
     }
 }
