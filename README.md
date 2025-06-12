@@ -15,7 +15,7 @@ This project is aimed to provide a microservice to summarize the reviews of the 
 For achieving this, we have implemented a 3-tiered application consisting of:
 * Chrome Extension popup
 * NodeJS Backend
-* Fine-tuned BERT model cluster
+* Fine-tuned BERT model clustier
 
 These three tiers are stand-alone tiers communicating according to the following architecture.
 
@@ -32,7 +32,7 @@ The `background.js` injects runtime messages for later trigger using the extensi
             aspects_extracted
         },
         ...
-    ]
+    ],
     final_summary:{
         pros: [
             ...
@@ -40,8 +40,8 @@ The `background.js` injects runtime messages for later trigger using the extensi
         cons:[
             ...
         ]
-    }
-    summary_paragraph: ...
+    },
+    summary_paragraph: ...,
 }
 ```
 The `summary_paragraph` is sent back to the front-end which triggers `chrome.runtime.onMessage(Modal)`, passing the paragraph to the content-scripts for injecting a modal in the webpage consisting the summary.
@@ -76,7 +76,7 @@ The documentation for the work and outputs of the model is documented [Here](/se
 
 - [Abanoub Aziz](https://github.com/abanoub-samy-farhan) — Backend, Chrome Extension, Deployment
 - [Abdallah Adel](https://github.com/abdallahade1) — Machine Learning
-- [Abdelrahman Ryiad](https://github.com/alihassan) — Machine Learning
+- [Abdelrahman Ryiad](https://github.com/abdulrahman-riyad) — Machine Learning
 - [Shahd Ammar](https://github.com/ShahdAmmar) — Machine Learning
 - [Yasmeen Sameh](https://github.com/Yasmeen55098) — Machine Learning
 
