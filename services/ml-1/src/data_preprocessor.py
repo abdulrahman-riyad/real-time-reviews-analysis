@@ -7,7 +7,7 @@ from datasets import Dataset
 def clean_and_standardize_data(df_input: pd.DataFrame) -> pd.DataFrame | None:
     """
     Cleans the combined DataFrame: standardizes column names, handles NaNs,
-    converts types, and strips text.
+    converts types, and strips text. Maps 'conflict' polarity to 'neutral'.
 
     Args:
         df_input (pd.DataFrame): The combined DataFrame from data_loader.
@@ -61,10 +61,23 @@ def clean_and_standardize_data(df_input: pd.DataFrame) -> pd.DataFrame | None:
         return None
 
     if 'polarity' in df_cleaned.columns:
-        print("\nUnique polarity values found:")
+        print("\nOriginal unique polarity values found:")
         print(df_cleaned['polarity'].unique())
+
+        # Map 'conflict' to 'neutral'
+        df_cleaned['polarity'] = df_cleaned['polarity'].replace('conflict', 'neutral')
+        print("\nUnique polarity values after mapping 'conflict' to 'neutral':")
+        print(df_cleaned['polarity'].unique())
+
+        # Filter for expected polarities after mapping
+        expected_polarities = ['positive', 'negative', 'neutral']
+        original_len = len(df_cleaned)
+        df_cleaned = df_cleaned[df_cleaned['polarity'].isin(expected_polarities)]
+        if len(df_cleaned) < original_len:
+            print(f"Filtered out {original_len - len(df_cleaned)} rows with unexpected polarities.")
     else:
         print("Warning: 'polarity' column not found.")
+
 
     print("\nCleaned DataFrame Info:")
     df_cleaned.info()
@@ -75,6 +88,7 @@ def clean_and_standardize_data(df_input: pd.DataFrame) -> pd.DataFrame | None:
 
 def _aggregate_aspects_per_sentence_helper(group: pd.DataFrame) -> pd.Series | None:
     """Helper function to aggregate aspects for a single sentence group."""
+    # No changes needed here, it already carries 'polarity'
     required_cols = ['sentence', 'aspect_term', 'polarity', 'from', 'to', 'domain', 'id']
     if not all(col in group.columns for col in required_cols):
          print(f"Warning: Skipping group due to missing columns. Group keys: {group.name}")
@@ -98,13 +112,6 @@ def _aggregate_aspects_per_sentence_helper(group: pd.DataFrame) -> pd.Series | N
 def aggregate_data_for_hf(df_cleaned: pd.DataFrame) -> Dataset | None:
     """
     Aggregates aspect data per unique sentence and converts to Hugging Face Dataset.
-
-    Args:
-        df_cleaned (pd.DataFrame): The cleaned DataFrame from previous step.
-
-    Returns:
-        datasets.Dataset | None: The Hugging Face Dataset ready for tokenization,
-                                or None if aggregation fails.
     """
     if df_cleaned is None or df_cleaned.empty:
         print("Error: Input DataFrame for aggregation is None or empty.")
@@ -124,7 +131,7 @@ def aggregate_data_for_hf(df_cleaned: pd.DataFrame) -> Dataset | None:
         aggregated_data_series = df_cleaned.groupby('unique_id').apply(
             lambda g: _aggregate_aspects_per_sentence_helper(g)
         )
-        aggregated_data_series = aggregated_data_series.dropna() # Remove groups that returned None
+        aggregated_data_series = aggregated_data_series.dropna()
         if aggregated_data_series.empty:
             print("Error: Aggregation resulted in an empty dataset.")
             return None

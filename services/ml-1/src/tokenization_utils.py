@@ -1,18 +1,22 @@
 """
-Handles tokenization and alignment of BIO labels for Aspect Extraction.
-Also includes data splitting and collator setup.
+Handles tokenization and alignment of BIO-Sentiment labels for ABSA.
 """
-from transformers import AutoTokenizer, AutoConfig
+from transformers import AutoTokenizer, AutoConfig, DataCollatorForTokenClassification
 from datasets import DatasetDict
 from . import config
 
 def get_tokenizer_and_config():
-    """Loads and returns the tokenizer and model configuration."""
+    """Loads and returns the tokenizer and model configuration using LABEL_LIST from config."""
     print(f"Loading Tokenizer and Config for {config.MODEL_NAME}...")
     try:
+        # LABEL_LIST is now taken from config.py
         label2id = {label: i for i, label in enumerate(config.LABEL_LIST)}
         id2label = {i: label for i, label in enumerate(config.LABEL_LIST)}
         num_labels = len(config.LABEL_LIST)
+
+        print(f"Using {num_labels} labels: {config.LABEL_LIST}")
+        print(f"label2id map: {label2id}")
+
 
         tokenizer = AutoTokenizer.from_pretrained(config.MODEL_NAME)
         model_config = AutoConfig.from_pretrained(
@@ -27,17 +31,11 @@ def get_tokenizer_and_config():
         print(f"Error loading tokenizer/config: {e}")
         return None, None, None, None, None
 
+
 def tokenize_and_align_labels(examples, tkz, lbl2id, label_all_tokens=config.LABEL_ALL_TOKENS):
     """
-    Tokenizes sentences and aligns BIO labels based on character spans.
-    Args:
-        examples: A batch of examples from the dataset (dict-like with 'sentence', 'aspects').
-        tkz: The loaded Hugging Face tokenizer.
-        lbl2id: Dictionary mapping string labels ("O", "B-ASP", "I-ASP") to IDs.
-        label_all_tokens: If True, labels all subword tokens within an aspect.
-                          If False, only labels the first subword token.
-    Returns:
-        A dictionary containing tokenized inputs and aligned labels.
+    Tokenizes sentences and aligns BIO-Sentiment labels based on character spans.
+    Now uses the 'polarity' from the aspect data to form labels like B-ASP-POS.
     """
     if tkz is None or lbl2id is None:
         raise ValueError("Tokenizer (tkz) or Label2ID (lbl2id) map is None.")
@@ -51,31 +49,47 @@ def tokenize_and_align_labels(examples, tkz, lbl2id, label_all_tokens=config.LAB
     )
     all_labels = []
     for i, offset_mapping in enumerate(tokenized_inputs["offset_mapping"]):
-        aspects_in_doc = examples["aspects"][i]
+        aspects_in_doc = examples["aspects"][i] # Contains 'term', 'polarity', 'from', 'to'
         word_ids = tokenized_inputs.word_ids(batch_index=i)
+        # Initialize labels: -100 for special tokens, 0 ('O') for all others
         label_ids = [-100 if word_id is None else lbl2id["O"] for word_id in word_ids]
 
         for aspect in aspects_in_doc:
             asp_start_char = aspect['from']
             asp_end_char = aspect['to']
+            # Map dataset polarity to our label polarity suffix (POS, NEG, NEU)
+            polarity_suffix = ""
+            if aspect['polarity'] == 'positive':
+                polarity_suffix = "POS"
+            elif aspect['polarity'] == 'negative':
+                polarity_suffix = "NEG"
+            elif aspect['polarity'] == 'neutral':
+                polarity_suffix = "NEU"
+            else:
+                # Should not happen if data_preprocessor worked correctly
+                print(f"Warning: Unexpected polarity '{aspect['polarity']}' found for aspect '{aspect['term']}'. Defaulting to O.")
+                continue # Skip this aspect if polarity is unknown
 
+            first_token_in_span_for_this_aspect = True
             for idx, (start_char, end_char) in enumerate(offset_mapping):
-                if start_char == end_char == 0: continue
+                if start_char == end_char == 0: continue # Skip special token offsets
 
-                if (start_char < asp_end_char) and (end_char > asp_start_char):
-                    if label_ids[idx] == lbl2id["O"]:  # Only label if currently 'O'
-                        is_first_word_token_of_aspect = True
+                # Check if current token overlaps with the aspect's character span
+                if (start_char < asp_end_char) and (end_char > asp_start_char): # Overlap
+                    if label_ids[idx] == lbl2id["O"]: # Only label if currently 'O' to avoid complex overlap handling
+                        is_first_word_token_of_current_word = True
                         current_token_word_id = word_ids[idx]
                         if current_token_word_id is not None and idx > 0:
-                            prev_token_word_id = word_ids[idx - 1]
+                            prev_token_word_id = word_ids[idx-1]
                             if prev_token_word_id == current_token_word_id:
-                                is_first_word_token_of_aspect = False
+                                is_first_word_token_of_current_word = False
 
-                        # Check if token start char aligns with aspect start char for B-ASP
-                        if start_char >= asp_start_char and is_first_word_token_of_aspect:
-                            label_ids[idx] = lbl2id["B-ASP"]
-                        else:  # Otherwise, it's an Inside token
-                            label_ids[idx] = lbl2id["I-ASP"]
+                        # Check if it's the true beginning of the aspect span
+                        if start_char >= asp_start_char and is_first_word_token_of_current_word and first_token_in_span_for_this_aspect:
+                            label_ids[idx] = lbl2id[f"B-ASP-{polarity_suffix}"]
+                            first_token_in_span_for_this_aspect = False # Next token in this aspect is 'I'
+                        else:
+                            label_ids[idx] = lbl2id[f"I-ASP-{polarity_suffix}"]
 
         if not label_all_tokens:
             final_aligned_labels = []
@@ -99,6 +113,8 @@ def map_and_split_dataset(hf_dataset, tokenizer, label2id) -> DatasetDict | None
     """
     Applies tokenization and label alignment, then splits into train/validation/test.
     """
+    # No changes to the core logic of this function needed for new labels,
+    # as it just passes tokenizer and label2id to tokenize_and_align_labels.
     if hf_dataset is None or tokenizer is None or label2id is None:
         print("Error: hf_dataset, tokenizer, or label2id missing for mapping and splitting.")
         return None
@@ -114,6 +130,8 @@ def map_and_split_dataset(hf_dataset, tokenizer, label2id) -> DatasetDict | None
         print("Tokenization complete.")
     except Exception as e:
         print(f"Error during .map(): {e}")
+        import traceback
+        traceback.print_exc() # Print for debugging
         return None
 
     print("\nSplitting dataset...")

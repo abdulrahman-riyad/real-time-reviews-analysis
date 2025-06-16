@@ -6,7 +6,8 @@ import torch
 from transformers import (
     AutoModelForTokenClassification,
     TrainingArguments,
-    Trainer, DataCollatorForTokenClassification
+    Trainer,
+    DataCollatorForTokenClassification
 )
 import os
 from . import config as project_config
@@ -47,7 +48,7 @@ def run_training(data_base_path: str, model_output_base_dir: str):
     # --- Step 4: Tokenization, Label Alignment, Data Splits ---
     print("\n--- Running Step 4 (from train.py) ---")
     tokenizer, model_config, label2id, id2label, num_labels_from_config = get_tokenizer_and_config()
-    if not all([tokenizer, model_config, label2id, id2label]):
+    if not all([tokenizer, model_config, label2id, id2label, num_labels_from_config is not None]):
         print("Halting pipeline due to tokenizer/config loading failure.")
         return
 
@@ -64,12 +65,10 @@ def run_training(data_base_path: str, model_output_base_dir: str):
 
     # --- Step 6: Configure Training Arguments ---
     print("\n--- Step 6 (from train.py): Configuring Training Arguments ---")
-    # Construct specific output directory for this run
-    model_run_output_dir = os.path.join(model_output_base_dir, project_config.MODEL_NAME + "-absa-fine-tuned")
+    model_run_output_dir = os.path.join(model_output_base_dir, project_config.MODEL_NAME + "-absa-sentiment-fine-tuned")
     os.makedirs(model_run_output_dir, exist_ok=True)
     print(f"Model outputs will be saved to: {model_run_output_dir}")
 
-    # Calculate save_steps to be roughly one epoch for basic checkpointing
     save_steps_approx = len(dataset_splits['train']) // project_config.TRAIN_BATCH_SIZE
     if save_steps_approx == 0: save_steps_approx = 1
 
@@ -96,7 +95,7 @@ def run_training(data_base_path: str, model_output_base_dir: str):
     try:
         model = AutoModelForTokenClassification.from_pretrained(project_config.MODEL_NAME, config=model_config)
         model.to(device)
-        print(f"Model '{project_config.MODEL_NAME}' loaded and moved to {device}")
+        print(f"Model '{project_config.MODEL_NAME}' loaded with {num_labels_from_config} labels and moved to {device}")
 
         trainer = Trainer(
             model=model,
@@ -105,14 +104,14 @@ def run_training(data_base_path: str, model_output_base_dir: str):
             eval_dataset=dataset_splits["validation"],
             tokenizer=tokenizer,
             data_collator=data_collator,
-            compute_metrics=lambda p: compute_absa_metrics(p, id2label)  # Pass id2label via lambda
+            compute_metrics=lambda p: compute_absa_metrics(p, id2label)
         )
         print("Trainer instantiated successfully.")
     except Exception as e:
         print(f"Error during model loading or Trainer instantiation: {e}")
         import traceback
         traceback.print_exc()
-        return  # Exit if trainer setup fails
+        return
 
     # --- Step 8: Start Fine-Tuning ---
     print("\n--- Step 8 (from train.py): Starting Fine-Tuning ---")
@@ -131,14 +130,14 @@ def run_training(data_base_path: str, model_output_base_dir: str):
         print(f"An error occurred during training: {e}")
         import traceback
         traceback.print_exc()
-        return  # Exit if training fails
+        return
 
     # --- Step 9: Evaluation ---
     print("\n--- Step 9 (from train.py): Evaluation ---")
     print("Evaluating on the validation set...")
     try:
         eval_results = trainer.evaluate(eval_dataset=dataset_splits['validation'])
-        trainer.log_metrics("eval_validation", eval_results)  # Differentiate log key
+        trainer.log_metrics("eval_validation", eval_results)
         trainer.save_metrics("eval_validation", eval_results)
         print("Validation Set Evaluation Results:")
         print(eval_results)
@@ -149,7 +148,7 @@ def run_training(data_base_path: str, model_output_base_dir: str):
         print("\nEvaluating on the test set...")
         try:
             test_results = trainer.evaluate(eval_dataset=dataset_splits['test'])
-            trainer.log_metrics("eval_test", test_results)  # Differentiate log key
+            trainer.log_metrics("eval_test", test_results)
             trainer.save_metrics("eval_test", test_results)
             print("Test Set Evaluation Results:")
             renamed_test_results = {f"test_{k.replace('eval_', '')}": v for k, v in test_results.items()}
@@ -159,21 +158,33 @@ def run_training(data_base_path: str, model_output_base_dir: str):
 
     # --- Step 10: Saving Final Model ---
     print("\n--- Step 10 (from train.py): Saving Final Model ---")
-    final_save_path = os.path.join(model_run_output_dir, "final_model")
+    final_save_path = os.path.join(model_run_output_dir, "final_model_with_sentiment")
     os.makedirs(final_save_path, exist_ok=True)
     print(f"Saving the fine-tuned model and tokenizer to: {final_save_path}")
     try:
         trainer.save_model(final_save_path)
-        tokenizer.save_pretrained(final_save_path)
+        if tokenizer:
+             tokenizer.save_pretrained(final_save_path)
         print("Final model and tokenizer saved successfully.")
     except Exception as e:
         print(f"Error saving final model/tokenizer: {e}")
 
     print("\n--- ABSA Model Fine-Tuning Pipeline Complete ---")
 
+
 if __name__ == '__main__':
-    print("Running main training script...")
+    print("Running main training script ...")
+    if not os.path.exists(project_config.DEFAULT_LOCAL_DATA_PATH):
+        os.makedirs(project_config.DEFAULT_LOCAL_DATA_PATH)
+        print(f"Created directory: {project_config.DEFAULT_LOCAL_DATA_PATH}")
+        print(f"Please place {project_config.LAPTOP_TRAIN_FILE} and {project_config.RESTO_TRAIN_FILE} there.")
+
+    output_base = project_config.OUTPUT_DIR_BASE
+    if not os.path.exists(output_base):
+        os.makedirs(output_base)
+        print(f"Created directory: {output_base}")
+        
     run_training(
         data_base_path=project_config.DEFAULT_LOCAL_DATA_PATH,
-        model_output_base_dir=project_config.DEFAULT_LOCAL_DATA_PATH.replace("data","saved_models")
+        model_output_base_dir=output_base
     )
