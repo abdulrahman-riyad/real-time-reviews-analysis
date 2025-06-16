@@ -57,6 +57,8 @@ def tokenize_and_align_labels(examples, tkz, lbl2id, label_all_tokens=config.LAB
         for aspect in aspects_in_doc:
             asp_start_char = aspect['from']
             asp_end_char = aspect['to']
+            # Map dataset polarity to our label polarity suffix (POS, NEG, NEU)
+            polarity_suffix = ""
             if aspect['polarity'] == 'positive':
                 polarity_suffix = "POS"
             elif aspect['polarity'] == 'negative':

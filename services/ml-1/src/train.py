@@ -16,7 +16,6 @@ from .data_preprocessor import clean_and_standardize_data, aggregate_data_for_hf
 from .tokenization_utils import get_tokenizer_and_config, map_and_split_dataset
 from .evaluation_utils import compute_absa_metrics
 
-
 def run_training(data_base_path: str, model_output_base_dir: str):
     """
     Executes the full fine-tuning pipeline.
@@ -58,7 +57,6 @@ def run_training(data_base_path: str, model_output_base_dir: str):
         print("Halting pipeline due to tokenization/splitting failure.")
         return
 
-    # data_collator is defined here using the loaded tokenizer
     data_collator = DataCollatorForTokenClassification(tokenizer=tokenizer)
     print("Data Collator for Token Classification initialized.")
 
@@ -115,7 +113,7 @@ def run_training(data_base_path: str, model_output_base_dir: str):
         traceback.print_exc()
         return
 
-    # --- Step 8: Fine-Tuning ---
+    # --- Step 8: Start Fine-Tuning ---
     print("\n--- Step 8 (from train.py): Starting Fine-Tuning ---")
     try:
         print("Starting training...")
