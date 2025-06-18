@@ -18,9 +18,6 @@ exports.generateSummary = async (request, response) => {
             
             reviews.push(reviewBody);
         })
-        for (let i = 0; i < reviews.length; i++){
-            console.log(reviews[i]);
-        }
     
         // Request to the FastAPI
         axios.post(process.env.MODEL_URL, {
