@@ -4,7 +4,8 @@
   "description": "Providing a real time analysis to products through analizing reviews",
   "main": "server.js",
   "scripts": {
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "build": "echo 'No build step required'"
   },
   "author": "",
   "license": "ISC",
