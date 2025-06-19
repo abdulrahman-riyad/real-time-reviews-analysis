@@ -28,7 +28,6 @@ exports.generateSummary = async (request, response) => {
             }
         }).then(async (res) => {
             const data = await res.data;
-            console.log(data)
             response.status(200).send(JSON.stringify({
                 data: data
             }))

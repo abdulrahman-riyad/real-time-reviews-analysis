@@ -28,7 +28,7 @@ export default function GenerateButton() {
                     alert(`Response is undefined`);
                 }
 
-                fetch("http://localhost:5000/generate", {
+                fetch("https://real-time-analysis-app-api.vercel.app/generate", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -38,14 +38,12 @@ export default function GenerateButton() {
                     }),
                 }).then(async (res) => {
                     if (!res.ok){
-                        alert("Error happened while cleaning the data");
+                        alert("An error occurred while cleaning the data ");
                         return;
                     }
 
                     const result = await res.json();
                     
-                    console.log(result);
-
                     chrome.tabs.sendMessage(currentTab.id ? currentTab.id : -1, 
                         { type: "MODAL", data: result.data.final_summary.summary_paragraph}, (response) => {
                         if (chrome.runtime.lastError){
