@@ -48,3 +48,12 @@
   justify-content: center;
   align-items: center;
 }
+
+.icons-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+  gap: 10px;
+}
