@@ -31,7 +31,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setIsSignedIn(true);
         }
       } catch (err) {
-        console.error(err);
+        setIsSignedIn(false);
+        setUser(null);
       }
     };
     checkAuth();
