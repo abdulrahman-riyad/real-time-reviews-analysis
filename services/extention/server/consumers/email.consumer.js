@@ -45,11 +45,11 @@ async function emailConsumer() {
             const { to, subject, templateName, templateData } = emailPayload;
             try {
                 await sendEmail(to, subject, templateName, templateData);
+                console.log(` [🗸] Processed email for ${to}`);
                 channel.ack(msg);
             } catch (error) {
                 console.error('Error sending email:', error);
             }
-            console.log(` [🗸] Processed email for ${to}`);
         }
     }, {
         noAck: false

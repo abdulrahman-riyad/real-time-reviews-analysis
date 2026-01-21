@@ -15,7 +15,8 @@
   "main": "index.js",
   "scripts": {
     "test": "test",
-    "dev": "nodemon index.js"
+    "dev": "nodemon index.js",
+    "start": "node index.js"
   },
   "dependencies": {
     "amqplib": "^0.10.9",

@@ -1,0 +1,15 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  backend:
+    build: .
+    ports:
+      - "5000:5000"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
