@@ -75,7 +75,7 @@ router.get("/summary/:product_id", async (request, response) => {
         if (review.status === PENDING){
             return response.status(202).send({ message: "Summary is being generated, wait for an email" });
         } else if (review.status === FAILED) {
-            return response.status(500).send({ message: "Summary generation failed, please try again later" });
+            return response.status(500).send({ message: "Summary generation failed, please try regenerating" });
         }
         response.status(200).send({
             message: "Summary fetched successfully",

@@ -11,7 +11,6 @@ export default async function authMiddleware(req, res, next) {
         req.user = decoded;
         next();
     } catch (err) {
-        console.error("Error happened", err);
         return res.status(401).send({ message: "Unauthorized" });
     }
 }

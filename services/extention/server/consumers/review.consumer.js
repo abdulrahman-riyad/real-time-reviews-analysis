@@ -1,6 +1,6 @@
 import { Review } from "../models/Review.model.js";
 import { User } from "../models/User.model.js";
-import { FULFILLED } from "../config/constants.js";
+import { FAILED, FULFILLED } from "../config/constants.js";
 import { REVIEW_QUEUE } from "../config/rabbitmq.js";
 import createChannel from "../rabbitmq/channel.js";
 import emailProducer from "../producers/email.producer.js";
@@ -61,6 +61,7 @@ export async function reviewConsumer() {
                         summary = await processReviews(reviews);
                     } catch (err) {
                         console.error(`Error processing reviews for product_id ${product_id}: ${err}`);
+                        review.updateOne({ status: FAILED });
                         channel.ack(msg);
                         return;
                     }
